@@ -8,4 +8,5 @@ cc_library(
 	hdrs = glob([
 		"*.h",
 	]),
+	strip_include_prefix = "//src/base",
 )

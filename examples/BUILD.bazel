@@ -4,7 +4,6 @@ cc_library(
 	deps = [
 		"//src/base",
 	],
-	copts = ["-Isrc/base"],
 )
 
 cc_binary(
