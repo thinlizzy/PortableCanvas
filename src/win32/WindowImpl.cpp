@@ -123,11 +123,40 @@ void resizeOpenGLContext(UINT width, UINT height) {
 	glMatrixMode(GL_MODELVIEW);
 }
 
-// TODO
+// TODO properly implement wParamToKey
 Key wParamToKey(WPARAM wParam) { return Key(wParam); }
 
 Rect wRectToRect(RECT rect) {
-	return Rect({Point({rect.left,rect.top}),Point({rect.right,rect.bottom})});
+	return Rect({.leftTop=Point({.x=rect.left, .y=rect.top}), .rightBottom=Point({.x=rect.right, .y=rect.bottom})});
+}
+
+Point lParamToPoint(LPARAM lParam) {
+	POINTS p = MAKEPOINTS(lParam);
+	return Point{.x=p.x, .y=p.y};
+}
+
+MouseHits toMouseHits(UINT message, WPARAM wParam) {
+	MouseHits result = {};
+	switch(message) {
+		case WM_LBUTTONDOWN:
+		case WM_LBUTTONUP:
+			result.button = MouseButton::left;
+			break;
+		case WM_RBUTTONDOWN:
+		case WM_RBUTTONUP:
+			result.button = MouseButton::right;
+			break;
+		case WM_MBUTTONDOWN:
+		case WM_MBUTTONUP:
+			result.button = MouseButton::middle;
+			break;
+		default:
+			// TODO log that
+			break;
+	}
+	result.controlPressed = wParam & MK_CONTROL;
+	result.shiftPressed = wParam & MK_SHIFT;
+	return result;
 }
 
 // WindowImpl //
@@ -173,6 +202,15 @@ LRESULT WindowImpl::processMessage(UINT message, WPARAM wParam, LPARAM lParam) {
 			// the logging below was used to confirm the OpenGL context is already working during the paint event
 			// LOG_MESSAGE(reinterpret_cast<char const *>(glGetString(GL_VERSION)), message, hwnd, wParam, lParam);
 			break;
+		case WM_LBUTTONDOWN:
+		case WM_RBUTTONDOWN:
+		case WM_MBUTTONDOWN:
+			if( mouseDownEvent ) {
+				LOG_MESSAGE("mouseDownEvent", message, hwnd, wParam, lParam);
+				mouseDownEvent(toMouseHits(message, wParam),lParamToPoint(lParam));
+			}
+			break;
+
 	}
 	// TODO handle WM_CLOSE ?
 	return 0;

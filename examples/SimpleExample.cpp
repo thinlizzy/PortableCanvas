@@ -15,8 +15,10 @@ int main() {
 	window.onKeyDown([&](auto key) {
 		application.stop();
 	});
-	// TODO window.onMouseDown()
-	// TODO imagens
+	window.onMouseDown([&](auto hits, auto point) {
+		application.stop();
+	});
+	// TODO images
 
 	application.run(); // process UI messages until it's interrupted or all windows are closed
 }

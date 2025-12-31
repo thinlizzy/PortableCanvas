@@ -10,5 +10,6 @@ Window::~Window() {}
 
 void Window::onPaint(PaintEvent event) { impl->onPaint(event); }
 void Window::onKeyDown(KeyDownEvent event) { impl->onKeyDown(event); }
+void Window::onMouseDown(MouseDownEvent event) { impl->onMouseDown(event); }
 
 }

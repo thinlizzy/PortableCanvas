@@ -8,16 +8,18 @@
 namespace pc {
 
 class WindowImpl {
-public:
-	HWND hwnd;
 	PaintEvent paintEvent;
 	KeyDownEvent keyDownEvent;
+	MouseDownEvent mouseDownEvent;
+public:
+	HWND hwnd;
 
 	WindowImpl(WindowParameters parameters, WNDCLASSW const & windowClass);
 	LRESULT processMessage(UINT message, WPARAM wParam, LPARAM lParam);
 
 	void onPaint(PaintEvent event) { paintEvent = event; }
 	void onKeyDown(KeyDownEvent event) { keyDownEvent = event; }
+	void onMouseDown(MouseDownEvent event) { mouseDownEvent = event; }
 };
 
 }

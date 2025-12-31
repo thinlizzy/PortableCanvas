@@ -17,6 +17,7 @@ public:
 	~Window();
 	void onPaint(PaintEvent event);
 	void onKeyDown(KeyDownEvent event);
+	void onMouseDown(MouseDownEvent event);
 };
 
 }
