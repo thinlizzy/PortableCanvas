@@ -27,7 +27,7 @@ constexpr Point operator-(Point const & p1, Point const & p2) {
 	return Point{ .x = p1.x - p2.x, .y = p1.y - p2.y };
 }
 
-// literals
+namespace literals {
 
 constexpr Point operator""_x(unsigned long long v) {
 	return Point{ .x = int(v) };
@@ -35,6 +35,8 @@ constexpr Point operator""_x(unsigned long long v) {
 
 constexpr Point operator""_y(unsigned long long v) {
 	return Point{ .y = int(v) };
+}
+
 }
 
 }

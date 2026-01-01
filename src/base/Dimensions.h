@@ -28,7 +28,7 @@ constexpr Dimensions operator-(Dimensions const & d1, Dimensions const & d2) {
 	return Dimensions{ .width = d1.width - d2.width, .height = d1.height - d2.height };
 }
 
-// literals
+namespace literals {
 
 constexpr Dimensions operator""_w(unsigned long long v)
 {
@@ -38,6 +38,8 @@ constexpr Dimensions operator""_w(unsigned long long v)
 constexpr Dimensions operator""_h(unsigned long long v)
 {
 	return Dimensions{ .height = int(v) };
+}
+
 }
 
 }

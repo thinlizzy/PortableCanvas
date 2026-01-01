@@ -2,6 +2,7 @@
 #include "WindowParameters.h"
 
 using namespace pc;
+using namespace pc::literals;
 
 int main() {
 	// Application owns everything and runs the event loop

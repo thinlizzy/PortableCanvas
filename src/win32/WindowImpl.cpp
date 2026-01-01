@@ -188,6 +188,7 @@ LRESULT WindowImpl::processMessage(UINT message, WPARAM wParam, LPARAM lParam) {
 			if( keyDownEvent ) {
 				LOG_MESSAGE("keyDownEvent", message, hwnd, wParam, lParam);
 				keyDownEvent(wParamToKey(wParam));
+				return 1;
 			}
 			break;
 		case WM_PAINT:
@@ -198,6 +199,7 @@ LRESULT WindowImpl::processMessage(UINT message, WPARAM wParam, LPARAM lParam) {
 				auto canvas = CanvasImpl();
 				paintEvent(canvas,wRectToRect(ps.rcPaint));
 				EndPaint(hwnd,&ps);
+				return 1;
 			}
 			// the logging below was used to confirm the OpenGL context is already working during the paint event
 			// LOG_MESSAGE(reinterpret_cast<char const *>(glGetString(GL_VERSION)), message, hwnd, wParam, lParam);
@@ -208,6 +210,7 @@ LRESULT WindowImpl::processMessage(UINT message, WPARAM wParam, LPARAM lParam) {
 			if( mouseDownEvent ) {
 				LOG_MESSAGE("mouseDownEvent", message, hwnd, wParam, lParam);
 				mouseDownEvent(toMouseHits(message, wParam),lParamToPoint(lParam));
+				return 1;
 			}
 			break;
 
