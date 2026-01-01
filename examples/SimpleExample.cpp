@@ -1,5 +1,5 @@
-#include "Application.h"
-#include "WindowParameters.h"
+#include "portablecanvas/Application.h"
+#include "portablecanvas/WindowParameters.h"
 
 using namespace pc;
 using namespace pc::literals;

@@ -9,4 +9,5 @@ cc_library(
 		"*.h",
 	]),
 	strip_include_prefix = "//src/base",
+	include_prefix = "portablecanvas",
 )
