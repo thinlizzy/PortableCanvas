@@ -31,9 +31,7 @@ ImageImpl::ImageImpl(Dimensions dimensions, BytesPerPixel bpp, ImageBuffer bytes
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,dimensions.width,dimensions.height,0,sourceFormat,GL_UNSIGNED_BYTE,bytes);
 	auto error = glGetError();
-	if( error != GL_NO_ERROR ) {
-		throw "error loading texture";
-	}
+	if( error != GL_NO_ERROR ) throw "error loading texture";
 }
 
 ImageImpl::~ImageImpl() {

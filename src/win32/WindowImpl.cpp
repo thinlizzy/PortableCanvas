@@ -221,7 +221,7 @@ LRESULT WindowImpl::processMessage(UINT message, WPARAM wParam, LPARAM lParam) {
 }
 
 Image WindowImpl::createImage(Dimensions dimensions, BytesPerPixel bpp, ImageBuffer bytes) {
-    return Image(std::make_unique<ImageImpl>(dimensions,bpp,bytes));
+	return Image(std::make_unique<ImageImpl>(dimensions,bpp,bytes));
 }
 
 }

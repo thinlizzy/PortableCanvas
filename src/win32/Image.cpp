@@ -8,6 +8,7 @@ Image::Image(std::unique_ptr<ImageImpl> impl):
 	impl(std::move(impl))
 {}
 
+Image::Image(Image &&) = default;
 Image::~Image() = default;
 
 Dimensions Image::dimensions() const { return impl->dimensions(); }

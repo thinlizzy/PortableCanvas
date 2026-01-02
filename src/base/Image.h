@@ -14,6 +14,7 @@ public:
 	std::unique_ptr<ImageImpl> impl;
 
 	Image(std::unique_ptr<ImageImpl> impl);
+	Image(Image &&);
 	~Image();
 	Dimensions dimensions() const;
 	BytesPerPixel bpp() const;
