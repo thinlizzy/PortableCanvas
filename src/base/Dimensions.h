@@ -30,13 +30,11 @@ constexpr Dimensions operator-(Dimensions const & d1, Dimensions const & d2) {
 
 namespace literals {
 
-constexpr Dimensions operator""_w(unsigned long long v)
-{
+constexpr Dimensions operator""_w(unsigned long long v) {
 	return Dimensions{ .width = int(v) };
 }
 
-constexpr Dimensions operator""_h(unsigned long long v)
-{
+constexpr Dimensions operator""_h(unsigned long long v) {
 	return Dimensions{ .height = int(v) };
 }
 

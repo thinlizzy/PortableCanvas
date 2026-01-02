@@ -1,4 +1,7 @@
 #include "CanvasImpl.h"
+#include "ImageImpl.h"
+#include "src/base/Rect.h"
+#include <iostream>
 #include <windows.h>
 #include <gl/GL.h>
 
@@ -28,6 +31,28 @@ CanvasImpl & CanvasImpl::line(Point p1, Point p2, Color color) {
 	glVertex2i(p1.x,p1.y);
 	glVertex2i(p2.x,p2.y);
 	glEnd();
+	return *this;
+}
+
+CanvasImpl & CanvasImpl::drawImage(Point p, Image const & image) {
+	auto const & imageImpl = dynamic_cast<ImageImpl const &>(image);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D,imageImpl.texture);
+	auto r = Rect::open(p,imageImpl.dimensions());
+
+	glColor4f(1.0, 1.0, 1.0, 1.0); // TODO remove glColor4f() when figuring out how to do it
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.f,0.f),
+	glVertex2i(r.leftTop.x,r.leftTop.y);
+	glTexCoord2f(1.f,0.f),
+	glVertex2i(r.rightBottom.x,r.leftTop.y);
+	glTexCoord2f(1.f,1.f),
+	glVertex2i(r.rightBottom.x,r.rightBottom.y);
+	glTexCoord2f(0.f,1.f),
+	glVertex2i(r.leftTop.x,r.rightBottom.y);
+	glEnd();
+
+	glDisable(GL_TEXTURE_2D);
 	return *this;
 }
 

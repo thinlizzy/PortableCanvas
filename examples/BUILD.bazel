@@ -13,3 +13,30 @@ cc_binary(
 		"//:pc",
 	],
 )
+
+cc_library(
+	name = "image-example-lib",
+	srcs = [
+		"ImageExample.cpp",
+		"stb_image.h",
+	],
+	deps = [
+		"//src/base",
+	],
+	defines = select({
+		# goes back 5: examples + 4 more paths
+		"@bazel_tools//src/conditions:windows": ["BAZEL_DATA_PATH=../../../../../examples/"],
+		"//conditions:default": [],
+	}),
+)
+
+cc_binary(
+	name = "ImageExample",
+	deps = [
+		":image-example-lib",
+		"//:pc",
+	],
+	data = [
+		"hearts.png",
+	],
+)

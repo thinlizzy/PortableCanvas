@@ -3,6 +3,7 @@
 
 #include <string_view>
 #include "Color.h"
+#include "Image.h"
 #include "Point.h"
 
 namespace pc {
@@ -14,6 +15,8 @@ public:
 	virtual Canvas & textOut(Point p, std::string_view text, Color color) = 0;
 
 	virtual Canvas & line(Point p1, Point p2, Color color) = 0;
+
+	virtual Canvas & drawImage(Point p, Image const & image) = 0;
 };
 
 }
