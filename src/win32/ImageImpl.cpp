@@ -4,22 +4,10 @@
 
 namespace pc {
 
-ImageImpl::ImageImpl(unsigned int texture, Dimensions dimensions, BytesPerPixel bpp):
-	texture(texture),
-	dimensions_(dimensions),
-	bpp_(bpp)
-{}
-
-ImageImpl::~ImageImpl() {
-	glDeleteTextures(1, &texture);
-}
-
-Dimensions ImageImpl::dimensions() const {
-    return dimensions_;
-}
-
-BytesPerPixel ImageImpl::bpp() const {
-    return bpp_;
+auto genTexture() {
+	unsigned int texture;
+	glGenTextures(1,&texture);
+	return texture;
 }
 
 auto bppToOpenGlFormat(BytesPerPixel bpp) {
@@ -32,10 +20,12 @@ auto bppToOpenGlFormat(BytesPerPixel bpp) {
 	}
 }
 
-std::unique_ptr<Image> createImage(Dimensions dimensions, BytesPerPixel bpp, unsigned char const * bytes) {
+ImageImpl::ImageImpl(Dimensions dimensions, BytesPerPixel bpp, ImageBuffer bytes):
+	texture(genTexture()),
+	dimensions_(dimensions),
+	bpp_(bpp)
+{
 	auto sourceFormat = bppToOpenGlFormat(bpp);
-	unsigned int texture;
-	glGenTextures(1,&texture);
 	glBindTexture(GL_TEXTURE_2D,texture);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
@@ -44,7 +34,18 @@ std::unique_ptr<Image> createImage(Dimensions dimensions, BytesPerPixel bpp, uns
 	if( error != GL_NO_ERROR ) {
 		throw "error loading texture";
 	}
-	return std::make_unique<ImageImpl>(texture,dimensions,bpp);
+}
+
+ImageImpl::~ImageImpl() {
+	glDeleteTextures(1, &texture);
+}
+
+Dimensions ImageImpl::dimensions() const {
+    return dimensions_;
+}
+
+BytesPerPixel ImageImpl::bpp() const {
+    return bpp_;
 }
 
 }

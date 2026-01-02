@@ -35,10 +35,9 @@ CanvasImpl & CanvasImpl::line(Point p1, Point p2, Color color) {
 }
 
 CanvasImpl & CanvasImpl::drawImage(Point p, Image const & image) {
-	auto const & imageImpl = dynamic_cast<ImageImpl const &>(image);
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D,imageImpl.texture);
-	auto r = Rect::open(p,imageImpl.dimensions());
+	glBindTexture(GL_TEXTURE_2D,image.impl->texture);
+	auto r = Rect::open(p,image.dimensions());
 
 	glColor4f(1.0, 1.0, 1.0, 1.0); // TODO remove glColor4f() when figuring out how to do it
 	glBegin(GL_QUADS);

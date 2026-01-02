@@ -3,8 +3,9 @@
 #include <gl/GL.h>
 #include <cstdlib>
 #include <stdexcept>
-#include "CanvasImpl.h"
 #include "windows_error.h"
+#include "CanvasImpl.h"
+#include "ImageImpl.h"
 #include "src/base/Dimensions.h"
 #include "src/base/Point.h"
 #include "src/base/Rect.h"
@@ -217,6 +218,10 @@ LRESULT WindowImpl::processMessage(UINT message, WPARAM wParam, LPARAM lParam) {
 	}
 	// TODO handle WM_CLOSE ?
 	return 0;
+}
+
+Image WindowImpl::createImage(Dimensions dimensions, BytesPerPixel bpp, ImageBuffer bytes) {
+    return Image(std::make_unique<ImageImpl>(dimensions,bpp,bytes));
 }
 
 }

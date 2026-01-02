@@ -1,21 +1,22 @@
 #ifndef PORTABLE_CANVAS_IMAGE_IMPL_2026_01_01_H
 #define PORTABLE_CANVAS_IMAGE_IMPL_2026_01_01_H
 
-#include "src/base/Image.h"
+#include "src/base/Dimensions.h"
+#include "src/base/ImageTypes.h"
 
 namespace pc {
 
-class ImageImpl: public Image {
+class ImageImpl {
 public:
 	unsigned int texture;
 private:
 	Dimensions dimensions_;
 	BytesPerPixel bpp_;
 public:
-	ImageImpl(unsigned int texture, Dimensions dimensions, BytesPerPixel bpp);
-	~ImageImpl() override;
-	Dimensions dimensions() const override;
-	BytesPerPixel bpp() const override;
+	ImageImpl(Dimensions dimensions, BytesPerPixel bpp, ImageBuffer bytes);
+	~ImageImpl();
+	Dimensions dimensions() const;
+	BytesPerPixel bpp() const;
 };
 
 }

@@ -2,6 +2,7 @@
 #define PORTABLE_CANVAS_WINDOW_IMPL_2024_01_31_H
 
 #include <windows.h>
+#include "src/base/Image.h"
 #include "src/base/WindowEvents.h"
 #include "src/base/WindowParameters.h"
 
@@ -20,6 +21,8 @@ public:
 	void onPaint(PaintEvent event) { paintEvent = event; }
 	void onKeyDown(KeyDownEvent event) { keyDownEvent = event; }
 	void onMouseDown(MouseDownEvent event) { mouseDownEvent = event; }
+
+	Image createImage(Dimensions dimensions, BytesPerPixel bpp, ImageBuffer bytes);
 };
 
 }

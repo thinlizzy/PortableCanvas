@@ -2,21 +2,22 @@
 #define PORTABLE_CANVAS_IMAGE_2026_01_01_H
 
 #include <memory>
-#include <span>
 #include "Dimensions.h"
+#include "ImageTypes.h"
 
 namespace pc {
 
-using BytesPerPixel = unsigned;
+class ImageImpl;
 
 class Image {
 public:
-	virtual ~Image();
-	virtual Dimensions dimensions() const = 0;
-	virtual BytesPerPixel bpp() const = 0;
-};
+	std::unique_ptr<ImageImpl> impl;
 
-std::unique_ptr<Image> createImage(Dimensions dimensions, BytesPerPixel bpp, unsigned char const * bytes);
+	Image(std::unique_ptr<ImageImpl> impl);
+	~Image();
+	Dimensions dimensions() const;
+	BytesPerPixel bpp() const;
+};
 
 }
 
