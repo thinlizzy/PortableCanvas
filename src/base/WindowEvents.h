@@ -21,6 +21,9 @@ struct MouseHits {
 	MouseButton button;
 	bool controlPressed;
 	bool shiftPressed;
+
+	bool leftClick() const { return button == MouseButton::left; }
+	bool rightClick() const { return button == MouseButton::right; }
 };
 
 using PaintEvent = std::function<void(Canvas &,Rect)>;

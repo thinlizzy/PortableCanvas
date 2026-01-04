@@ -1,7 +1,13 @@
 #ifndef PORTABLE_CANVAS_DIMS_2024_01_25_H
 #define PORTABLE_CANVAS_DIMS_2024_01_25_H
 
+#include <concepts>
+#include <type_traits>
+
 namespace pc {
+
+template<typename T>
+concept arithmetic = std::is_arithmetic_v<T>;
 
 struct Dimensions {
 	int width;
@@ -26,6 +32,10 @@ constexpr Dimensions operator+(Dimensions const & d1, Dimensions const & d2) {
 
 constexpr Dimensions operator-(Dimensions const & d1, Dimensions const & d2) {
 	return Dimensions{ .width = d1.width - d2.width, .height = d1.height - d2.height };
+}
+
+constexpr Dimensions operator*(Dimensions const & d1, arithmetic auto scale) {
+	return Dimensions{ .width = int(d1.width * scale), .height = int(d1.height * scale) };
 }
 
 namespace literals {

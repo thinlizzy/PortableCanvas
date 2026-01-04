@@ -5,6 +5,7 @@
 #include "Color.h"
 #include "Image.h"
 #include "Point.h"
+#include "Rect.h"
 
 namespace pc {
 
@@ -16,7 +17,15 @@ public:
 
 	virtual Canvas & line(Point p1, Point p2, Color color) = 0;
 
+	virtual Canvas & rectangle(Rect rect, Color color) = 0;
+
 	virtual Canvas & drawImage(Point p, Image const & image) = 0;
+
+	virtual Canvas & drawImage(Rect rect, Image const & image) = 0;
+
+	virtual Canvas & drawImage(Point p, int scale, Image const & image) = 0;
+
+	virtual Canvas & drawImage(Point p, float scale, Image const & image) = 0;
 };
 
 }
