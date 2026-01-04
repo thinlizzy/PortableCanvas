@@ -16,9 +16,13 @@ class Window {
 public:
 	explicit Window(WindowImpl * impl);
 	~Window();
+
 	void onPaint(PaintEvent event);
 	void onKeyDown(KeyDownEvent event);
 	void onMouseDown(MouseDownEvent event);
+
+	void repaint();
+	bool visible() const;
 
 	Image createImage(Dimensions dimensions, BytesPerPixel bpp, ImageBuffer bytes);
 };

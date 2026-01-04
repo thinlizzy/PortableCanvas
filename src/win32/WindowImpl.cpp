@@ -163,7 +163,8 @@ MouseHits toMouseHits(UINT message, WPARAM wParam) {
 // WindowImpl //
 
 WindowImpl::WindowImpl(WindowParameters parameters, WNDCLASSW const & windowClass):
-	hwnd(create(parameters,windowClass))	
+	hwnd(create(parameters,windowClass)),
+	visible(true)
 {
 	createOpenGLContext(hwnd);
 	RECT rect;
@@ -194,7 +195,7 @@ LRESULT WindowImpl::processMessage(UINT message, WPARAM wParam, LPARAM lParam) {
 			break;
 		case WM_PAINT:
 			if( paintEvent ) {
-				LOG_MESSAGE("paintEvent", message, hwnd, wParam, lParam);
+				// LOG_MESSAGE("paintEvent", message, hwnd, wParam, lParam);
 				PAINTSTRUCT ps;
 				BeginPaint(hwnd,&ps);
 				auto canvas = CanvasImpl();
@@ -214,10 +215,24 @@ LRESULT WindowImpl::processMessage(UINT message, WPARAM wParam, LPARAM lParam) {
 				return 1;
 			}
 			break;
+		case WM_CLOSE:
+			// TODO implement closeEvent
+			// if( closeEvent ) {
+			// 	auto canClose = closeEvent();
+			// 	if( canClose ) {
+			// 		visible = false;
+			// 	}
+			// 	return 1;
+			// }
+			visible = false;
+			break;
 
 	}
-	// TODO handle WM_CLOSE ?
 	return 0;
+}
+
+void WindowImpl::repaint() {
+	InvalidateRect(hwnd,0,false);
 }
 
 Image WindowImpl::createImage(Dimensions dimensions, BytesPerPixel bpp, ImageBuffer bytes) {
