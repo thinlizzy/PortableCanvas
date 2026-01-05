@@ -100,6 +100,10 @@ void createOpenGLContext(HWND hwnd) {
 	// create bitmaps for the device context font's first 256 glyphs
 	wglUseFontBitmaps(hdc,0,256,1000);
 	glListBase(1000);
+
+	// enable alpha blending for RGBA textures
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void destroyOpenGLContext(HWND hwnd) {

@@ -1,13 +1,9 @@
 #ifndef PORTABLE_CANVAS_DIMS_2024_01_25_H
 #define PORTABLE_CANVAS_DIMS_2024_01_25_H
 
-#include <concepts>
-#include <type_traits>
+#include "concept_arithmetic.h"
 
 namespace pc {
-
-template<typename T>
-concept arithmetic = std::is_arithmetic_v<T>;
 
 struct Dimensions {
 	int width;

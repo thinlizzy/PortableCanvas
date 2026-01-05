@@ -1,6 +1,8 @@
 #ifndef PORTABLE_CANVAS_POINT_2024_01_26_H
 #define PORTABLE_CANVAS_POINT_2024_01_26_H
 
+#include "concept_arithmetic.h"
+
 namespace pc {
 
 struct Point {
@@ -27,8 +29,12 @@ constexpr Point operator-(Point const & p1, Point const & p2) {
 	return Point{ .x = p1.x - p2.x, .y = p1.y - p2.y };
 }
 
-constexpr Point operator*(Point const & p1, int m) {
-	return Point{ .x = p1.x*m, .y = p1.y*m };
+constexpr Point operator*(Point const & p1, arithmetic auto m) {
+	return Point{ .x = int(p1.x*m), .y = int(p1.y*m) };
+}
+
+constexpr Point operator/(Point const & p1, arithmetic auto d) {
+	return Point{ .x = int(p1.x/d), .y = int(p1.y/d) };
 }
 
 namespace literals {
