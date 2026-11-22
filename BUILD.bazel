@@ -1,9 +1,11 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
 	name = "pc",
 	deps = select({
-		"@bazel_tools//src/conditions:windows": ["//src/win32"],
+		"@platforms//os:windows": ["//src/win32"],
 		"//conditions:default": ["//src/linux"],
 	}),
 )

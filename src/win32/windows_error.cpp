@@ -1,4 +1,5 @@
 #include "windows_error.h"
+#include <cstdint>
 #include <format>
 #include <iostream>
 
@@ -17,7 +18,7 @@ std::string lastWindowsError() {
 }
 
 void logMessage(std::string_view source, UINT message, HWND hwnd, WPARAM wParam, LPARAM lParam) {
-	std::cerr << std::format("{}: {} hwnd {:08X} wParam {} lParam {}\n", source, windowsMessageToString(message), long(hwnd), wParam, lParam);
+	std::cerr << std::format("{}: {} hwnd {:08X} wParam {} lParam {}\n", source, windowsMessageToString(message), uintptr_t(hwnd), wParam, lParam);
 }
 
 std::string windowsMessageToString(UINT message) {

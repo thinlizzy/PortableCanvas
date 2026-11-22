@@ -2,9 +2,11 @@
 #include <windows.h>
 #include <gl/GL.h>
 #include <cstdlib>
+#include <memory>
 #include <stdexcept>
 #include "windows_error.h"
 #include "CanvasImpl.h"
+#include "GlContext.h"
 #include "ImageImpl.h"
 #include "src/base/Dimensions.h"
 #include "src/base/Point.h"
@@ -63,60 +65,6 @@ static HWND create(WindowParameters parameters, WNDCLASSW const & windowClass) {
 	return hWnd;
 }
 
-void createOpenGLContext(HWND hwnd) {
-	auto pfd = PIXELFORMATDESCRIPTOR({ 
-		sizeof(PIXELFORMATDESCRIPTOR),    // size of this pfd  
-		1,                                // version number  
-		PFD_DRAW_TO_WINDOW |              // support window  
-		PFD_SUPPORT_OPENGL |              // support OpenGL  
-		PFD_DOUBLEBUFFER,                 // double buffered  
-		PFD_TYPE_RGBA,                    // RGBA type  
-		32,                               // 32-bit color depth
-		0, 0, 0, 0, 0, 0,                 // color bits ignored  
-		0,                                // no alpha buffer  
-		0,                                // shift bit ignored  
-		0,                                // no accumulation buffer  
-		0, 0, 0, 0,                       // accum bits ignored  
-		24,                               // 24-bit z-buffer      
-		0,                                // no stencil buffer  
-		0,                                // no auxiliary buffer  
-		PFD_MAIN_PLANE,                   // main layer  
-		0,                                // reserved  
-		0, 0, 0                           // layer masks ignored  
-	});
-	auto hdc = GetDC(hwnd);
-	if( auto iPixelFormat = ChoosePixelFormat(hdc,&pfd) ) {
-		if( SetPixelFormat(hdc,iPixelFormat,&pfd) ) {
-			if( auto hglrc = wglCreateContext(hdc) ) {
-				if( wglMakeCurrent(hdc,hglrc) ) {
-					goto okay;
-				}
-			}
-		}
-	}
-	throw std::runtime_error(lastWindowsError());
-
-	okay:
-	// create bitmaps for the device context font's first 256 glyphs
-	wglUseFontBitmaps(hdc,0,256,1000);
-	glListBase(1000);
-
-	// enable alpha blending for RGBA textures
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-}
-
-void destroyOpenGLContext(HWND hwnd) {
-	if( auto hglrc = wglGetCurrentContext() ) {
-		glDeleteLists(1000,256);
-
-		auto hdc = wglGetCurrentDC();
-		wglMakeCurrent(NULL,NULL);
-		ReleaseDC(hwnd,hdc);
-		wglDeleteContext(hglrc);
-	}
-}
-
 void resizeOpenGLContext(UINT width, UINT height) {
 	glViewport(0,0,width,height);
 	glMatrixMode(GL_PROJECTION);
@@ -168,24 +116,45 @@ MouseHits toMouseHits(UINT message, WPARAM wParam) {
 
 WindowImpl::WindowImpl(WindowParameters parameters, WNDCLASSW const & windowClass):
 	hwnd(create(parameters,windowClass)),
+	gl(nullptr),
 	visible(true)
 {
-	createOpenGLContext(hwnd);
-	RECT rect;
-	GetClientRect(hwnd,&rect);
-	resizeOpenGLContext(rect.right,rect.bottom);
+	try {
+		gl = std::make_shared<GlContext>(hwnd);
+		RECT rect;
+		GetClientRect(hwnd,&rect);
+		gl->withCurrent([&] { resizeOpenGLContext(rect.right,rect.bottom); });
+	} catch(...) {
+		release();
+		throw;
+	}
+}
+
+WindowImpl::~WindowImpl() {
+	release();
+}
+
+void WindowImpl::release() {
+	if( gl ) gl->invalidate();
+	gl.reset();
+	if( hwnd != nullptr ) {
+		DestroyWindow(hwnd);
+		hwnd = nullptr;
+	}
 }
 
 LRESULT WindowImpl::processMessage(UINT message, WPARAM wParam, LPARAM lParam) { 
 	switch(message) {
 		// events we handle internally
 		case WM_DESTROY:
-			destroyOpenGLContext(hwnd);
+			// release GL resources while the window (and its device context) still exist
+			if( gl ) gl->invalidate();
+			gl.reset();
 			break;
 		case WM_SIZE:
 			if( wParam != SIZE_MINIMIZED ) {
 				LOG_MESSAGE("resizeOpenGLContext", message, hwnd, wParam, lParam);
-				resizeOpenGLContext(LOWORD(lParam),HIWORD(lParam));
+				gl->withCurrent([&] { resizeOpenGLContext(LOWORD(lParam),HIWORD(lParam)); });
 			}
 			break;
 		
@@ -202,8 +171,10 @@ LRESULT WindowImpl::processMessage(UINT message, WPARAM wParam, LPARAM lParam) {
 				// LOG_MESSAGE("paintEvent", message, hwnd, wParam, lParam);
 				PAINTSTRUCT ps;
 				BeginPaint(hwnd,&ps);
-				auto canvas = CanvasImpl();
-				paintEvent(canvas,wRectToRect(ps.rcPaint));
+				gl->withCurrent([&] {
+					auto canvas = CanvasImpl();
+					paintEvent(canvas,wRectToRect(ps.rcPaint));
+				});
 				EndPaint(hwnd,&ps);
 				return 1;
 			}
@@ -240,7 +211,8 @@ void WindowImpl::repaint() {
 }
 
 Image WindowImpl::createImage(Dimensions dimensions, BytesPerPixel bpp, ImageBuffer bytes) {
-	return Image(std::make_unique<ImageImpl>(dimensions,bpp,bytes));
+	if( !gl ) throw std::runtime_error("window has no OpenGL context");
+	return Image(std::make_unique<ImageImpl>(gl,dimensions,bpp,bytes));
 }
 
 }

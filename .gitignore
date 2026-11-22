@@ -1,0 +1,14 @@
+# C++ artifacts
+.obj
+.exe
+
+# Bazel artifacts
+bazel-*
+
+# Hedron artifacts
+/compile_commands.json
+/compile_flags.txt
+/external
+
+# vscode
+.vscode

@@ -11,7 +11,7 @@ struct WindowParameters {
 	Dimensions dimensions = {};
 	std::variant<std::monostate, std::string, std::wstring> name;
 
-	bool isDefaultDimensions() {
+	bool isDefaultDimensions() const {
 		return dimensions.width == 0 && dimensions.height == 0;
 	}
 };

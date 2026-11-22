@@ -1,5 +1,7 @@
 #include "src/base/Application.h"
 #include <windows.h>
+#include <memory>
+#include <stdexcept>
 #include <unordered_map>
 #include "WindowImpl.h"
 #include "windows_error.h"
@@ -14,15 +16,15 @@ public:
 	std::unordered_map<HWND,Window> windows;
 
 	ApplicationImpl();
+	~ApplicationImpl();
 	LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
 
 ApplicationImpl * applicationImplSingleton = nullptr;  // all windows use a global WndProc, so we need a singleton :(
 
 ApplicationImpl * getApplicationInstance() {
-	if( applicationImplSingleton != nullptr ) throw "can't create two or more Application instances";
-	applicationImplSingleton = new ApplicationImpl();
-	return applicationImplSingleton;
+	if( applicationImplSingleton != nullptr ) throw std::runtime_error("can't create two or more Application instances");
+	return applicationImplSingleton = new ApplicationImpl();
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
@@ -32,12 +34,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
 Application::Application(): impl(getApplicationInstance()) {
 }
 
-Application::~Application() {}
+Application::~Application() {
+	impl.reset();
+	applicationImplSingleton = nullptr;
+}
 
 auto Application::createWindow(WindowParameters parameters) -> Window & {
 	// see https://godbolt.org/z/r7Tsq6svz
-	auto windowImpl = new WindowImpl(parameters,impl->windowClass);
-	auto [it,_] = impl->windows.try_emplace(windowImpl->hwnd,windowImpl);
+	auto windowImpl = std::make_unique<WindowImpl>(parameters,impl->windowClass);
+	auto hwnd = windowImpl->hwnd;
+	auto [it,inserted] = impl->windows.try_emplace(hwnd,windowImpl.get());
+	if( !inserted ) throw std::runtime_error("window already registered");
+	windowImpl.release();
 	return it->second;
 }
 
@@ -88,6 +96,14 @@ ApplicationImpl::ApplicationImpl():
 		running(true),
 		windowClass(getWindowClass()) {
 	RegisterClassW(&windowClass);
+}
+
+ApplicationImpl::~ApplicationImpl() {
+	// move the map out first: destroying the windows sends WM_ messages, and
+	// WndProc must not observe the map while it is being cleared
+	auto doomed = std::move(windows);
+	doomed.clear();
+	UnregisterClassW(windowClass.lpszClassName,windowClass.hInstance);
 }
 
 LRESULT ApplicationImpl::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {

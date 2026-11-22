@@ -1,3 +1,6 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
 cc_library(
 	name = "simple-example-lib",
 	srcs = ["SimpleExample.cpp"],
@@ -25,7 +28,7 @@ cc_library(
 	],
 	defines = select({
 		# goes back 5: examples + 4 more paths
-		"@bazel_tools//src/conditions:windows": ["BAZEL_DATA_PATH=../../../../../examples/"],
+		"@platforms//os:windows": ["BAZEL_DATA_PATH=../../../../../examples/"],
 		"//conditions:default": [],
 	}),
 )

@@ -4,6 +4,9 @@ module(
     compatibility_level = 1,
 )
 
+bazel_dep(name = "rules_cc", version = "0.2.17")
+bazel_dep(name = "platforms", version = "1.0.0")
+
 new_local_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:local.bzl", "new_local_repository")
 
 # win32
@@ -13,6 +16,8 @@ new_local_repository(
 	# NOTE: replace with your own Windows libraries path
 	path = "C:/Program Files (x86)/Windows Kits/10/Lib/10.0.26100.0/um/x64",
 	build_file_content = """
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
 cc_library(
 	name = "win32",
 	srcs = [
@@ -31,6 +36,8 @@ new_local_repository(
 	name = "linux_libs",
 	path = "/usr/lib",
 	build_file_content = """
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
 cc_library(
 	name = "x11",
 	# pkg-config --variable=libdir x11

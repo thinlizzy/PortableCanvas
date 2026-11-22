@@ -15,7 +15,6 @@ std::string windowsMessageToString(UINT message);
 
 }
 
-#define LOG_MESSAGE(source,message,hwnd,wParam,lParam)
 #define LOG_MESSAGE(source,message,hwnd,wParam,lParam) logMessage(source,message,hwnd,wParam,lParam)
 #define LOG_APP_MESSAGE(source,message,hwnd,wParam,lParam)
 
