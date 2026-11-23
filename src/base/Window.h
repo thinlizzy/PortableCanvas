@@ -19,10 +19,15 @@ public:
 
 	void onPaint(PaintEvent event);
 	void onKeyDown(KeyDownEvent event);
+	void onChar(CharEvent event);
 	void onMouseDown(MouseDownEvent event);
+	void onMouseMove(MouseMoveEvent event);
+	void onMouseUp(MouseUpEvent event);
+	void onClose(CloseEvent event);
 
 	void repaint();
 	bool visible() const;
+	void close();
 
 	Image createImage(Dimensions dimensions, BytesPerPixel bpp, ImageBuffer bytes);
 };

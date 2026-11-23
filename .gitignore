@@ -5,6 +5,12 @@
 # Bazel artifacts
 bazel-*
 
+# agents
+.bazel*
+hs_err_pid*.log
+replay_pid*.log
+
+
 # Hedron artifacts
 /compile_commands.json
 /compile_flags.txt

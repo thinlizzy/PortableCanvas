@@ -53,12 +53,14 @@ void Application::processMessages() {
 	MSG msg;
 	while( PeekMessageW(&msg,NULL,0,0,PM_REMOVE) != 0 ) {
 		LOG_APP_MESSAGE("Application",msg.message,msg.hwnd,msg.wParam,msg.lParam);
+		// translate before the direct call: a handled WM_KEYDOWN returns early,
+		// but the WM_CHAR it generates must still reach the window
+		TranslateMessage(&msg);  // post a WM_CHAR message if msg is a WM_KEY message
 		auto it = impl->windows.find(msg.hwnd);
 		if( it != impl->windows.end() ) {
 			// non zero = message was processed so go back to fetch the next message
 			if( it->second.impl->processMessage(msg.message,msg.wParam,msg.lParam) ) continue;
 		}
-		TranslateMessage(&msg);  // post a WM_CHAR message if msg is a WM_KEY message
 		DispatchMessageW(&msg);  // send it to WndProc (suggested by MSDN)
 	}
 }

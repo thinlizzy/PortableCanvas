@@ -1,6 +1,7 @@
 #include "WindowImpl.h"
 #include <windows.h>
 #include <gl/GL.h>
+#include <cstdint>
 #include <cstdlib>
 #include <memory>
 #include <stdexcept>
@@ -103,6 +104,11 @@ MouseHits toMouseHits(UINT message, WPARAM wParam) {
 		case WM_MBUTTONUP:
 			result.button = MouseButton::middle;
 			break;
+		case WM_MOUSEMOVE:
+			if( wParam & MK_LBUTTON ) result.button = MouseButton::left;
+			else if( wParam & MK_RBUTTON ) result.button = MouseButton::right;
+			else if( wParam & MK_MBUTTON ) result.button = MouseButton::middle;
+			break;
 		default:
 			// TODO log that
 			break;
@@ -186,19 +192,46 @@ LRESULT WindowImpl::processMessage(UINT message, WPARAM wParam, LPARAM lParam) {
 		case WM_MBUTTONDOWN:
 			if( mouseDownEvent ) {
 				LOG_MESSAGE("mouseDownEvent", message, hwnd, wParam, lParam);
+				SetCapture(hwnd);
 				mouseDownEvent(toMouseHits(message, wParam),lParamToPoint(lParam));
 				return 1;
 			}
 			break;
+		case WM_LBUTTONUP:
+		case WM_RBUTTONUP:
+		case WM_MBUTTONUP:
+			ReleaseCapture();
+			if( mouseUpEvent ) {
+				LOG_MESSAGE("mouseUpEvent", message, hwnd, wParam, lParam);
+				mouseUpEvent(toMouseHits(message, wParam),lParamToPoint(lParam));
+				return 1;
+			}
+			break;
+		case WM_MOUSEMOVE:
+			if( mouseMoveEvent ) {
+				mouseMoveEvent(toMouseHits(message, wParam),lParamToPoint(lParam));
+				return 1;
+			}
+			break;
+		case WM_CHAR:
+			if( charEvent ) {
+				auto code = static_cast<std::uint32_t>(wParam);
+				if( code >= 0xD800 && code <= 0xDBFF ) {
+					pendingHighSurrogate = static_cast<wchar_t>(wParam);
+					return 1;
+				}
+				if( code >= 0xDC00 && code <= 0xDFFF && pendingHighSurrogate != 0 ) {
+					code = 0x10000 +
+						((static_cast<std::uint32_t>(pendingHighSurrogate) - 0xD800) << 10) +
+						(code - 0xDC00);
+				}
+				pendingHighSurrogate = 0;
+				charEvent(code);
+				return 1;
+			}
+			break;
 		case WM_CLOSE:
-			// TODO implement closeEvent
-			// if( closeEvent ) {
-			// 	auto canClose = closeEvent();
-			// 	if( canClose ) {
-			// 		visible = false;
-			// 	}
-			// 	return 1;
-			// }
+			if( closeEvent && ! closeEvent() ) return 1;
 			visible = false;
 			break;
 
@@ -208,6 +241,10 @@ LRESULT WindowImpl::processMessage(UINT message, WPARAM wParam, LPARAM lParam) {
 
 void WindowImpl::repaint() {
 	InvalidateRect(hwnd,0,false);
+}
+
+void WindowImpl::close() {
+	if( hwnd != nullptr ) PostMessageW(hwnd,WM_CLOSE,0,0);
 }
 
 Image WindowImpl::createImage(Dimensions dimensions, BytesPerPixel bpp, ImageBuffer bytes) {

@@ -39,14 +39,9 @@ examples   SimpleExample.cpp, ImageExample.cpp (smoke tests)
 - **Windows live in `unordered_map<HWND, Window>` owned by
   `ApplicationImpl`.** `createWindow` returns a `Window &` into that map.
   The entry is erased on `WM_NCDESTROY`, so a cached reference dangles once
-  the window is closed/destroyed. There is no API to destroy a window; only
-  the OS does, and `WM_CLOSE` merely sets `visible = false` before
-  `DefWindowProcW` destroys it.
-- **Windows live in `unordered_map<HWND, Window>` owned by
-  `ApplicationImpl`.** `createWindow` returns a `Window &` into that map.
-  The entry is erased on `WM_NCDESTROY`, so a cached reference dangles once
-  the window is closed/destroyed. There is no API to destroy a window; only
-  the OS does, and `WM_CLOSE` merely sets `visible = false`.
+  the window is closed/destroyed. `Window::close()` posts `WM_CLOSE`; the
+  `CloseEvent` runs first and can veto the close. Afterwards the OS destroys
+  the window, so clear assets and stored window pointers in `onClose`.
 - **`Application::run` blocks in `WaitMessage`.** `stop()` only breaks the
   loop when called from inside a message callback; it does not post
   `WM_QUIT`. Do not call UI APIs from other threads — the backend is
@@ -115,13 +110,22 @@ its own `GlContext`:
 ## Events
 
 - Hooks are `std::function`s in `WindowEvents.h`: `PaintEvent`
-  (`Canvas &`, update `Rect`), `KeyDownEvent` (`Key`), `MouseDownEvent`
-  (`MouseHits`, `Point`). There are no move/up/wheel/close hooks yet.
+  (`Canvas &`, update `Rect`), `KeyDownEvent` (`Key`), `CharEvent`
+  (Unicode code point), `MouseDownEvent`, `MouseMoveEvent`, `MouseUpEvent`
+  (`MouseHits`, `Point`), and `CloseEvent` (`bool`, false vetoes the close).
+  There is still no wheel/scroll hook.
 - `processMessage` returns nonzero only for user events it handled.
-  `Application::processMessages` skips `DispatchMessageW` for those, which
-  prevents user callbacks firing twice. Internal messages (`WM_SIZE`,
-  `WM_DESTROY`, `WM_NCDESTROY`) are seen twice — once directly and once via
-  `WndProc` — so keep any new internal handling idempotent.
+  `Application::processMessages` calls `TranslateMessage` before the direct
+  call and skips `DispatchMessageW` for handled events, so handled keydowns
+  still produce `WM_CHAR` and user callbacks do not fire twice. Internal
+  messages (`WM_SIZE`, `WM_DESTROY`, `WM_NCDESTROY`) are seen twice — once
+  directly and once via `WndProc` — so keep any new internal handling
+  idempotent.
+- Mouse buttons are captured on down and released on up so dragging keeps
+  receiving move/up messages outside the window. `WM_MOUSEMOVE` reports the
+  held button in `MouseHits`; `button` is value 0 when none is held.
+- `WM_CHAR` decodes UTF-16, including surrogate pairs, into a Unicode code
+  point for `CharEvent`.
 - `wParamToKey` is a raw cast into an empty `Key` enum; key events carry no
   meaningful value yet. `MouseHits` reports button plus Ctrl/Shift only, and
   `extra1`/`extra2` are unused.
@@ -231,8 +235,7 @@ already use spaces — leave them).
 - `CanvasImpl` draws `Image`s from other windows' contexts as if the texture
   existed; guard against cross-window images if you expose longer-lived
   canvases.
-- No close/move/scroll events; `WM_CLOSE` handling is commented out and
-  hard-sets `visible = false`.
+- No wheel/scroll event yet.
 - `CanvasImpl` still swaps buffers through `wglGetCurrentDC()`; that is safe
   only because paint runs inside `GlContext::withCurrent`.
 - `Application::stop()` does not post `WM_QUIT`; it relies on the message

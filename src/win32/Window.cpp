@@ -10,11 +10,17 @@ Window::~Window() {}
 
 void Window::onPaint(PaintEvent event) { impl->onPaint(event); }
 void Window::onKeyDown(KeyDownEvent event) { impl->onKeyDown(event); }
+void Window::onChar(CharEvent event) { impl->onChar(event); }
 void Window::onMouseDown(MouseDownEvent event) { impl->onMouseDown(event); }
+void Window::onMouseMove(MouseMoveEvent event) { impl->onMouseMove(event); }
+void Window::onMouseUp(MouseUpEvent event) { impl->onMouseUp(event); }
+void Window::onClose(CloseEvent event) { impl->onClose(event); }
 
 void Window::repaint() { impl->repaint(); }
 
 bool Window::visible() const { return impl->visible; }
+
+void Window::close() { impl->close(); }
 
 Image Window::createImage(Dimensions dimensions, BytesPerPixel bpp, ImageBuffer bytes) {
 	return impl->createImage(dimensions,bpp,bytes);
