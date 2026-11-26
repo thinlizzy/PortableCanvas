@@ -126,9 +126,11 @@ its own `GlContext`:
   held button in `MouseHits`; `button` is value 0 when none is held.
 - `WM_CHAR` decodes UTF-16, including surrogate pairs, into a Unicode code
   point for `CharEvent`.
-- `wParamToKey` is a raw cast into an empty `Key` enum; key events carry no
-  meaningful value yet. `MouseHits` reports button plus Ctrl/Shift only, and
-  `extra1`/`extra2` are unused.
+- `wParamToKey` maps `WM_KEYDOWN` virtual-key codes to `pc::Key`, including
+  the full letter/digit/numpad/punctuation/function-key set and the extended
+  keys that share a virtual-key code (right modifiers, numpad Enter). Key
+  events also carry the current Ctrl/Shift/Alt state. `MouseHits` reports
+  button plus Ctrl/Shift only, and `extra1`/`extra2` are unused.
 - Unhandled messages fall through to `DefWindowProcW`.
 
 ## Value types and literals
@@ -144,7 +146,11 @@ auto r    = Rect::open(p, dims);    // Rect{leftTop, rightBottom}
 - `Point`/`Dimensions` support `+ - * /` (arithmetic concept), compound
   assignment and per-axis literals. Combining `_w` and `_h` is how you build
   a `Dimensions`.
-- `Rect` is two corner `Point`s; `contains` uses **inclusive** bounds.
+- `Rect` is two corner `Point`s; `contains` uses **inclusive** bounds, and
+  `intersect` clamps the corners to the overlapping region.
+- `pc::Utf8` in `src/base/Utf8.h` is the single home for UTF-8 encoding,
+  decoding and code-point navigation. Widgets and text layout must call it
+  instead of keeping local byte decoders.
 - `Color` is `uint8_t r,g,b` — no alpha, no equality/printing operators.
 - `WindowParameters::name` is
   `std::variant<std::monostate, std::string, std::wstring>`; empty dimensions
@@ -227,7 +233,6 @@ already use spaces — leave them).
 
 ## Known TODOs and defects
 
-- `Key` enum is empty; `wParamToKey` is a raw `WPARAM` cast.
 - `Image`'s move constructor is not `noexcept`; move assignment is absent.
 - An image that outlives its window cannot free its GPU storage (the context
   is already gone); it only drops the handle. Prefer destroying images while

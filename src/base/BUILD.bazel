@@ -5,10 +5,10 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
 	name = "base",
 	srcs = glob([
-		"*.cpp",
+		"**/*.cpp",
 	]),
 	hdrs = glob([
-		"*.h",
+		"**/*.h",
 	]),
 	strip_include_prefix = "//src/base",
 	include_prefix = "portablecanvas",

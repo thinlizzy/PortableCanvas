@@ -1,6 +1,8 @@
 #include "CanvasImpl.h"
+#include "FontImpl.h"
 #include "ImageImpl.h"
 #include "src/base/Rect.h"
+#include <algorithm>
 #include <iostream>
 #include <windows.h>
 #include <gl/GL.h>
@@ -14,6 +16,11 @@ CanvasImpl::CanvasImpl() {
 
 CanvasImpl::~CanvasImpl() {
 	SwapBuffers(wglGetCurrentDC());
+}
+
+CanvasImpl & CanvasImpl::textOut(Point p, std::string_view text, Font const & font, Color color) {
+	font.impl->textOut(p,text,color);
+	return *this;
 }
 
 CanvasImpl & CanvasImpl::textOut(Point p, std::string_view text, Color color) {
@@ -36,6 +43,17 @@ CanvasImpl & CanvasImpl::line(Point p1, Point p2, Color color) {
 
 CanvasImpl & CanvasImpl::rectangle(Rect rect, Color color) {
 	glBegin(GL_LINE_LOOP);
+	glColor3ub(color.r,color.g,color.b);
+	glVertex2i(rect.leftTop.x,rect.leftTop.y);
+	glVertex2i(rect.rightBottom.x,rect.leftTop.y);
+	glVertex2i(rect.rightBottom.x,rect.rightBottom.y);
+	glVertex2i(rect.leftTop.x,rect.rightBottom.y);
+	glEnd();
+	return *this;
+}
+
+CanvasImpl & CanvasImpl::fillRect(Rect rect, Color color) {
+	glBegin(GL_QUADS);
 	glColor3ub(color.r,color.g,color.b);
 	glVertex2i(rect.leftTop.x,rect.leftTop.y);
 	glVertex2i(rect.rightBottom.x,rect.leftTop.y);
@@ -76,6 +94,32 @@ CanvasImpl & CanvasImpl::drawImage(Rect r, Image const &image) {
 	glEnd();
 	glDisable(GL_TEXTURE_2D);
 	return *this;
+}
+
+void CanvasImpl::pushClip(Rect rect) {
+	if( ! clips_.empty() ) rect = clips_.back().intersect(rect);
+	clips_.push_back(rect);
+	applyClip();
+}
+
+void CanvasImpl::popClip() {
+	if( clips_.empty() ) return;
+	clips_.pop_back();
+	applyClip();
+}
+
+void CanvasImpl::applyClip() {
+	if( clips_.empty() ) {
+		glDisable(GL_SCISSOR_TEST);
+		return;
+	}
+	GLint viewport[4];
+	glGetIntegerv(GL_VIEWPORT,viewport);
+	auto const & rect = clips_.back();
+	int width = rect.rightBottom.x - rect.leftTop.x;
+	int height = rect.rightBottom.y - rect.leftTop.y;
+	glEnable(GL_SCISSOR_TEST);
+	glScissor(rect.leftTop.x,viewport[3] - rect.rightBottom.y,std::max(width,0),std::max(height,0));
 }
 
 }
